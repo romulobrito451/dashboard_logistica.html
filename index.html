@@ -9,24 +9,29 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
     <script>
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyC73PFnSCFomnhKmP6FQ-Drzk1sFIKHOms",
-  authDomain: "logistica-dashboard.firebaseapp.com",
-  projectId: "logistica-dashboard",
-  storageBucket: "logistica-dashboard.firebasestorage.app",
-  messagingSenderId: "1057102304003",
-  appId: "1:1057102304003:web:1ef8130a0ddb590fb74f36"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = firebase.firestore(); // Conexão que resolve o erro "db is not defined"
+        // ⚠️ SUBSTITUA OS VALORES ABAIXO PELOS SEUS REAIS DO FIREBASE ⚠️
+        const firebaseConfig = {
+          // Sua chave real de 39 caracteres que o Firebase te deu:
+          apiKey: "SUA_API_KEY_REAL_AQUI", 
+          
+          // Seu domínio de autenticação (usa seu project ID):
+          authDomain: "logistica-43973.firebaseapp.com", 
+          
+          // O ID do seu projeto (confirmado na imagem):
+          projectId: "logistica-43973", 
+          
+          // Seu bucket de armazenamento (usa seu project ID):
+          storageBucket: "logistica-43973.appspot.com",
+          
+          // Seu ID de remetente (número longo):
+          messagingSenderId: "710436410779",
+          
+          // Seu ID de aplicativo (sequência longa):
+          appId: "1:710436410779:web:a1b2c3d4e5f6g7h8i9j0" 
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); // Conexão que resolve o erro "db is not defined"
     </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -170,7 +175,7 @@ document.getElementById('form-ocorrencia').addEventListener('submit', async func
 });
 
 
-// --- Funções de Agregação e Cálculo (Mantidas) ---
+// --- Funções de Agregação e Cálculo ---
 
 function aggregatePerformance(performanceData) {
     const perfByTransp = {};
@@ -201,7 +206,6 @@ function aggregatePerformance(performanceData) {
 
 function aggregateOcorrencia(ocorrenciaData) {
     const sortedOcorrencias = ocorrenciaData.slice().sort((a, b) => {
-        // Ordenação simplificada por string, mas suficiente
         return b.mes.localeCompare(a.mes);
     });
 
@@ -322,3 +326,4 @@ window.onload = updateDashboard;
 
 </body>
 </html>
+                
