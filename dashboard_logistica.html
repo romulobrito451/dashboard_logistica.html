@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Logística - Avarias e Performance</title>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+
+    <script>
+        // *** SUBSTITUA ESTE OBJETO PELO SEU firebaseConfig REAL ***
+        const firebaseConfig = {
+          apiKey: "SEU_API_KEY_REAL", 
+          authDomain: "SEU_AUTH_DOMAIN",
+          projectId: "SEU_PROJECT_ID",
+          storageBucket: "SEU_STORAGE_BUCKET",
+          messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+          appId: "SEU_APP_ID"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        // Esta linha é a conexão com o banco de dados (o "Arquivo Central")
+        const db = firebase.firestore();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .dashboard-card { background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+        .form-section { background-color: #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-4">
+    <h1 class="mb-4 text-primary">Controle de Logística: Performance e Sinistros</h1>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-section">
+                <h3 class="mb-3">➕ Inserir Novos Dados (Simulação CRUD)</h3>
+                
+            
+            <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h4 class="text-success">Performance de Entrega</h4>
+                        <form id="form-performance">
+                            <div class="mb-3"><label class="form-label">Mês/Ano:</label><input type="text" id="perf-mes" class="form-control" value="06/2025" required></div>
+                            <div class="mb-3"><label class="form-label">Entregas no Prazo:</label><input type="number" id="perf-prazo" class="form-control" value="850" required></div>
+                            <div class="mb-3"><label class="form-label">Entregas Fora do Prazo:</label><input type="number" id="perf-fora" class="form-control" value="150" required></div>
+                            <div class="mb-3"><label class="form-label">Transportadora:</label><input type="text" id="perf-transportadora" class="form-control" value="Transp. Alpha" required></div>
+                            <button type="submit" class="btn btn-success w-100">Adicionar Performance</button>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <h4 class="text-danger">Avarias e Faltas (Sinistro)</h4>
+                        <form id="form-ocorrencia">
+                            <div class="mb-3"><label class="form-label">Mês/Ano:</label><input type="text" id="ocor-mes" class="form-control" value="06/2025" required></div>
+                            <div class="mb-3"><label class="form-label">Tipo:</label>
+                                <select id="ocor-tipo" class="form-select" required>
+                                    <option value="Avaria">Avaria</option>
+                                    <option value="Falta">Falta</option>
+                                </select>
+                            </div>
+                            <div class="mb-3"><label class="form-label">Valor Total (Prejuízo):</label><input type="number" step="0.01" id="ocor-total" class="form-control" value="500.00" required></div>
+                            <div class="mb-3"><label class="form-label">Valor Absorvido:</label><input type="number" step="0.01" id="ocor-absorvido" class="form-control" value="50.00" required></div>
+                            <div class="mb-3"><label class="form-label">Valor Recebido (Indenização):</label><input type="number" step="0.01" id="ocor-recebido" class="form-control" value="400.00" required></div>
+                            <div class="mb-3"><label class="form-label">Transportadora:</label><input type="text" id="ocor-transportadora" class="form-control" value="Transp. Beta" required></div>
+                            <button type="submit" class="btn btn-danger w-100">Adicionar Ocorrência</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mt-4 mb-3">📊 Dashboard de Indicadores</h2>
+
+    <div class="row text-center mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card bg-light">
+                <h4 class="text-success">Entregas no Prazo (OTD)</h4>
+                <p class="display-4 text-success" id="kpi-otd">0%</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card bg-light">
+                <h4 class="text-danger">Gap de Indenização (Líquido)</h4>
+                <p class="display-4 text-danger" id="kpi-gap">R$ 0.00</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card bg-light">
+                <h4 class="text-primary">Recuperação de Sinistro</h4>
+                <p class="display-4 text-primary" id="kpi-recuperacao">0%</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h4 class="text-center">Performance no Prazo por Transportadora</h4>
+                <canvas id="chart-performance"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h4 class="text-center">Volume de Ocorrências (Qtd.)</h4>
+                <canvas id="chart-volume-ocorrencias"></canvas>
+            </div>
+        </div>
+        
+        <div class="col-md-12 mt-4">
+            <div class="dashboard-card">
+                <h4 class="text-center">Análise Financeira de Sinistro (Último Mês)</h4>
+                <canvas id="chart-sinistro"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ATENÇÃO: Os arrays performanceData e ocorrenciaData foram removidos.
+// A variável 'db' (do <head>) é usada para persistência.
+
+// --- Funções de Inserção (CRUD) Reescritas para Firebase ---
+
+document.getElementById('form-performance').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const newPerf = {
+        mes: document.getElementById('perf-mes').value,
+        prazo: parseInt(document.getElementById('perf-prazo').value),
+        fora: parseInt(document.getElementById('perf-fora').value),
+        transp: document.getElementById('perf-transportadora').value,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        await db.collection('performance').add(newPerf);
+        alert(`Performance de ${newPerf.transp} adicionada e salva no Firebase!`);
+        updateDashboard(); 
+    } catch (error) {
+        console.error("Erro ao salvar performance: ", error);
+        alert("Erro ao salvar! Verifique o console.");
+    }
+});
+
+document.getElementById('form-ocorrencia').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const newOcor = {
+        mes: document.getElementById('ocor-mes').value,
+        tipo: document.getElementById('ocor-tipo').value,
+        total: parseFloat(document.getElementById('ocor-total').value),
+        absorvido: parseFloat(document.getElementById('ocor-absorvido').value),
+        recebido: parseFloat(document.getElementById('ocor-recebido').value),
+        transp: document.getElementById('ocor-transportadora').value,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    try {
+        await db.collection('ocorrencias').add(newOcor);
+        alert(`Ocorrência de ${newOcor.tipo} adicionada e salva no Firebase!`);
+        updateDashboard(); 
+    } catch (error) {
+        console.error("Erro ao salvar ocorrência: ", error);
+        alert("Erro ao salvar! Verifique o console.");
+    }
+});
+
+
+// --- Funções de Agregação e Cálculo (AGORA ACEITAM DADOS EXTERNOS) ---
+
+function aggregatePerformance(performanceData) {
+    const perfByTransp = {};
+    let totalPrazoGeral = 0;
+    let totalEntregasGeral = 0;
+
+    performanceData.forEach(item => {
+        const total = item.prazo + item.fora;
+        totalPrazoGeral += item.prazo;
+        totalEntregasGeral += total;
+
+        if (!perfByTransp[item.transp]) {
+            perfByTransp[item.transp] = { prazo: 0, total: 0 };
+        }
+        perfByTransp[item.transp].prazo += item.prazo;
+        perfByTransp
