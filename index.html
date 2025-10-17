@@ -9,7 +9,23 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
     <script>
-        // *** SUBSTITUA ESTE OBJETO PELO SEU firebaseConfig REAL ***
+        // // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC73PFnSCFomnhKmP6FQ-Drzk1sFIKHOms",
+  authDomain: "logistica-dashboard.firebaseapp.com",
+  projectId: "logistica-dashboard",
+  storageBucket: "logistica-dashboard.firebasestorage.app",
+  messagingSenderId: "1057102304003",
+  appId: "1:1057102304003:web:1ef8130a0ddb590fb74f36"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig); ***
         const firebaseConfig = {
           apiKey: "SEU_API_KEY_REAL", 
           authDomain: "SEU_AUTH_DOMAIN",
@@ -193,3 +209,4 @@ function aggregatePerformance(performanceData) {
         }
         perfByTransp[item.transp].prazo += item.prazo;
         perfByTransp
+
